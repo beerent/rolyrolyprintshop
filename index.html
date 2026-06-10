@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Print Parade</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="app-shell" data-state="loading">
+      <header class="top-bar">
+        <div class="brand-lockup" aria-label="Print Parade">
+          <div class="brand-mark" aria-hidden="true">PP</div>
+          <div>
+            <p class="eyebrow">Print Parade</p>
+            <h1>Picture printer</h1>
+          </div>
+        </div>
+
+        <div class="actions">
+          <p class="count-pill" id="imageCount">No images</p>
+          <button class="upload-button" type="button" id="uploadButton">
+            <span class="plus-icon" aria-hidden="true"></span>
+            Add images
+          </button>
+          <input id="fileInput" class="file-input" type="file" accept="image/*" multiple>
+        </div>
+      </header>
+
+      <section class="drop-zone" id="dropZone" aria-live="polite">
+        <div class="status-row">
+          <p id="statusText">Loading your picture wall</p>
+          <p id="saveState"></p>
+        </div>
+
+        <div class="grid" id="imageGrid" aria-label="Saved images"></div>
+
+        <div class="empty-state" id="emptyState">
+          <div class="empty-art" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <h2>No pictures yet</h2>
+          <button class="upload-button secondary" type="button" id="emptyUploadButton">
+            <span class="plus-icon" aria-hidden="true"></span>
+            Add your first images
+          </button>
+        </div>
+      </section>
+
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    </main>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
