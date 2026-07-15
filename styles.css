@@ -69,19 +69,129 @@ button {
 }
 
 .brand-mark {
-  width: 56px;
-  height: 56px;
+  position: relative;
+  width: 64px;
+  height: 64px;
   flex: 0 0 auto;
-  display: grid;
-  place-items: center;
   border: 2px solid var(--ink);
   border-radius: 8px;
   background:
-    linear-gradient(135deg, var(--pink) 0 50%, var(--blue) 50% 100%);
-  color: white;
-  font-weight: 900;
-  letter-spacing: 0;
-  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.24);
+    linear-gradient(180deg, #fff8dd 0 62%, #dff3ff 62% 100%);
+  box-shadow: 4px 4px 0 var(--ink);
+  overflow: hidden;
+}
+
+.brand-mark::before,
+.brand-mark::after,
+.brand-mark span {
+  content: "";
+  position: absolute;
+}
+
+.brand-mark::before {
+  left: 7px;
+  right: 7px;
+  top: 4px;
+  height: 12px;
+  border: 2px solid var(--ink);
+  border-radius: 4px 4px 2px 2px;
+  background:
+    repeating-linear-gradient(
+      90deg,
+      var(--pink) 0 8px,
+      white 8px 16px,
+      var(--blue) 16px 24px,
+      white 24px 32px
+    );
+}
+
+.brand-mark::after {
+  left: 5px;
+  right: 5px;
+  bottom: 5px;
+  height: 11px;
+  border-top: 2px solid var(--ink);
+  background: var(--green);
+}
+
+.shop-awning {
+  left: 11px;
+  top: 16px;
+  width: 4px;
+  height: 12px;
+  background: var(--ink);
+  box-shadow: 39px 0 0 var(--ink);
+}
+
+.shop-counter {
+  left: 7px;
+  right: 7px;
+  bottom: 14px;
+  height: 9px;
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+  background: var(--blue);
+}
+
+.shop-paper {
+  right: 8px;
+  bottom: 19px;
+  width: 19px;
+  height: 25px;
+  z-index: 4;
+  border: 2px solid var(--ink);
+  border-radius: 3px;
+  background:
+    linear-gradient(var(--yellow) 0 5px, transparent 5px),
+    linear-gradient(90deg, transparent 0 5px, rgba(38, 48, 71, 0.2) 5px 7px, transparent 7px),
+    white;
+  transform: rotate(7deg);
+}
+
+.pollie-shell {
+  left: 9px;
+  top: 28px;
+  width: 32px;
+  height: 22px;
+  z-index: 2;
+  border: 2px solid var(--ink);
+  border-radius: 50% 48% 45% 52%;
+  background: var(--pink);
+  transform: rotate(-12deg);
+}
+
+.pollie-segment {
+  z-index: 1;
+  top: 28px;
+  height: 22px;
+  border-left: 2px solid var(--ink);
+  transform-origin: center bottom;
+}
+
+.segment-one {
+  left: 17px;
+  transform: rotate(-24deg);
+}
+
+.segment-two {
+  left: 24px;
+  transform: rotate(-4deg);
+}
+
+.segment-three {
+  left: 31px;
+  transform: rotate(18deg);
+}
+
+.pollie-head {
+  left: 33px;
+  top: 32px;
+  width: 10px;
+  height: 10px;
+  z-index: 3;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  background: var(--ink);
 }
 
 .eyebrow,
@@ -104,8 +214,8 @@ h2 {
 }
 
 h1 {
-  font-size: clamp(1.7rem, 3vw, 2.7rem);
-  line-height: 1;
+  font-size: clamp(1.35rem, 2.8vw, 2.35rem);
+  line-height: 1.04;
 }
 
 .actions {
@@ -458,8 +568,4 @@ h1 {
     gap: 12px;
   }
 
-  .brand-mark {
-    width: 48px;
-    height: 48px;
-  }
 }

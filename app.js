@@ -1,6 +1,7 @@
-const DB_NAME = "print-parade";
+const DB_NAME = "rollie-pollie-print-shop";
 const DB_VERSION = 1;
 const STORE_NAME = "images";
+const LEGACY_DB_NAMES = ["print-parade"];
 
 const appShell = document.querySelector(".app-shell");
 const uploadButton = document.querySelector("#uploadButton");
@@ -17,6 +18,7 @@ const toast = document.querySelector("#toast");
 let images = [];
 let openMenuId = null;
 let toastTimer = 0;
+let pastedImageCount = 0;
 
 function makeId() {
   if (crypto.randomUUID) return crypto.randomUUID();
@@ -38,13 +40,21 @@ function formatCount(count) {
   return `${count} images`;
 }
 
+function extensionForType(type) {
+  if (type === "image/png") return "png";
+  if (type === "image/webp") return "webp";
+  if (type === "image/gif") return "gif";
+  if (type === "image/svg+xml") return "svg";
+  return "jpg";
+}
+
 function setSaving(isSaving) {
   saveState.textContent = isSaving ? "Saving" : "";
 }
 
-function openDb() {
+function openDb(name = DB_NAME) {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    const request = indexedDB.open(name, DB_VERSION);
 
     request.onupgradeneeded = () => {
       const db = request.result;
@@ -78,13 +88,41 @@ function requestResult(request) {
 async function loadRecords() {
   if (!("indexedDB" in window)) return [];
 
-  const db = await openDb();
+  const records = await readRecords(DB_NAME);
+  if (records.length) return sortRecords(records);
+
+  for (const legacyName of LEGACY_DB_NAMES) {
+    if (!(await databaseExists(legacyName))) continue;
+
+    const legacyRecords = await readRecords(legacyName);
+    if (legacyRecords.length) {
+      await saveRecords(legacyRecords);
+      return sortRecords(legacyRecords);
+    }
+  }
+
+  return [];
+}
+
+async function databaseExists(name) {
+  if (!indexedDB.databases) return true;
+
+  const databases = await indexedDB.databases();
+  return databases.some((database) => database.name === name);
+}
+
+function sortRecords(records) {
+  return records.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
+async function readRecords(dbName) {
+  const db = await openDb(dbName);
   try {
     const transaction = db.transaction(STORE_NAME, "readonly");
     const done = transactionDone(transaction);
     const records = await requestResult(transaction.objectStore(STORE_NAME).getAll());
     await done;
-    return records.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return records;
   } finally {
     db.close();
   }
@@ -302,6 +340,24 @@ async function addFiles(fileList) {
   }
 }
 
+async function addPastedImages(clipboardData) {
+  if (!clipboardData?.items?.length) return;
+
+  const files = Array.from(clipboardData.items)
+    .filter((item) => item.kind === "file" && item.type.startsWith("image/"))
+    .map((item) => item.getAsFile())
+    .filter(Boolean)
+    .map((file) => {
+      pastedImageCount += 1;
+      const extension = extensionForType(file.type);
+      return new File([file], `pasted-image-${pastedImageCount}.${extension}`, { type: file.type });
+    });
+
+  if (!files.length) return;
+
+  await addFiles(files);
+}
+
 async function removeImage(id) {
   const image = images.find((item) => item.id === id);
   if (!image) return;
@@ -357,6 +413,10 @@ dropZone.addEventListener("drop", (event) => {
   event.preventDefault();
   dropZone.classList.remove("is-dragging");
   addFiles(event.dataTransfer?.files ?? []);
+});
+
+document.addEventListener("paste", async (event) => {
+  await addPastedImages(event.clipboardData);
 });
 
 document.addEventListener("pointerdown", (event) => {

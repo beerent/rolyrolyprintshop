@@ -1,4 +1,4 @@
-# Print Parade
+# Rollie Pollie Print Shop
 
 A standalone, no-auth MVP for saving image files locally and printing them from a grid.
 
