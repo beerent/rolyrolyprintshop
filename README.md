@@ -29,9 +29,10 @@ PORT=3031 npm run dev
 ```bash
 npm run check
 npm run deploy
+npm run deploy:cors
 ```
 
-Firebase Storage requires the project to use the Blaze plan. Link a billing account in the Firebase console before creating the default bucket or deploying `storage.rules`. The bucket is configured for `us-east1`, one of Google Cloud Storage's Always Free eligible regions.
+Firebase Storage requires the project to use the Blaze plan. The bucket is configured for `us-east1`, one of Google Cloud Storage's Always Free eligible regions. Run `npm run deploy:cors` after creating or replacing the bucket so signed-in browsers can load private image previews from the production and local app origins.
 
 ## Data model
 

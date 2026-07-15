@@ -1,0 +1,25 @@
+[
+  {
+    "origin": [
+      "https://rolyrolyprintshop.web.app",
+      "https://rolyrolyprintshop.firebaseapp.com",
+      "http://localhost:3030",
+      "http://localhost:3031"
+    ],
+    "method": [
+      "GET",
+      "HEAD",
+      "PUT",
+      "POST",
+      "DELETE"
+    ],
+    "responseHeader": [
+      "Cache-Control",
+      "Content-Disposition",
+      "Content-Length",
+      "Content-Type",
+      "ETag"
+    ],
+    "maxAgeSeconds": 3600
+  }
+]

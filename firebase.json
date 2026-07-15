@@ -24,7 +24,8 @@
       "server.mjs",
       "firestore.rules",
       "firestore.indexes.json",
-      "storage.rules"
+      "storage.rules",
+      "storage.cors.json"
     ],
     "cleanUrls": true,
     "trailingSlash": false,
