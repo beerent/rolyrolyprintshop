@@ -602,15 +602,27 @@ h1 {
 }
 
 .caption {
-  min-height: 46px;
-  display: flex;
-  align-items: center;
+  min-height: 58px;
+  display: grid;
+  align-content: center;
+  gap: 2px;
   padding: 8px 10px;
   border-top: 2px solid var(--ink);
   color: var(--ink);
   font-size: 0.9rem;
   font-weight: 850;
   overflow-wrap: anywhere;
+}
+
+.caption-name {
+  min-width: 0;
+}
+
+.orientation-label {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-transform: uppercase;
 }
 
 .menu-wrap {

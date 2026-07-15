@@ -114,6 +114,48 @@ function extensionForType(type) {
   return "jpg";
 }
 
+function orientationForDimensions(width, height) {
+  return width > height ? "landscape" : "portrait";
+}
+
+function loadImageElement(blob) {
+  return new Promise((resolve, reject) => {
+    const src = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      const dimensions = { width: img.naturalWidth, height: img.naturalHeight };
+      URL.revokeObjectURL(src);
+      resolve(dimensions);
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(src);
+      reject(new Error("Could not read image dimensions."));
+    };
+    img.src = src;
+  });
+}
+
+async function inspectImage(blob) {
+  let dimensions;
+
+  if ("createImageBitmap" in window) {
+    try {
+      const bitmap = await createImageBitmap(blob, { imageOrientation: "from-image" });
+      dimensions = { width: bitmap.width, height: bitmap.height };
+      bitmap.close();
+    } catch {
+      dimensions = await loadImageElement(blob);
+    }
+  } else {
+    dimensions = await loadImageElement(blob);
+  }
+
+  return {
+    ...dimensions,
+    orientation: orientationForDimensions(dimensions.width, dimensions.height)
+  };
+}
+
 function setSaving(isSaving, label = "Saving") {
   saveState.textContent = isSaving ? label : "";
   uploadButton.disabled = isSaving;
@@ -308,6 +350,7 @@ function printImage(image) {
     return;
   }
 
+  const orientation = image.orientation === "landscape" ? "landscape" : "portrait";
   const cleanup = () => window.setTimeout(() => frame.remove(), 400);
   const runPrint = () => {
     printWindow.focus();
@@ -324,7 +367,7 @@ function printImage(image) {
   <head>
     <title>${escapeHtml(image.name)}</title>
     <style>
-      @page { margin: 0; }
+      @page { size: ${orientation}; margin: 0; }
       html, body { width: 100%; height: 100%; margin: 0; }
       body { display: flex; align-items: center; justify-content: center; background: white; }
       img { max-width: 100vw; max-height: 100vh; object-fit: contain; }
@@ -363,7 +406,11 @@ function createTile(image) {
   const imageButton = document.createElement("button");
   imageButton.className = "image-button";
   imageButton.type = "button";
-  imageButton.setAttribute("aria-label", image.src ? `Print ${image.name}` : `${image.name} preview unavailable`);
+  const orientation = image.orientation === "landscape" ? "Landscape" : "Portrait";
+  imageButton.setAttribute(
+    "aria-label",
+    image.src ? `Print ${image.name} in ${orientation.toLowerCase()}` : `${image.name} preview unavailable`
+  );
   imageButton.addEventListener("click", () => printImage(image));
 
   if (image.src) {
@@ -380,7 +427,15 @@ function createTile(image) {
 
   const caption = document.createElement("div");
   caption.className = "caption";
-  caption.textContent = image.name;
+
+  const captionName = document.createElement("span");
+  captionName.className = "caption-name";
+  captionName.textContent = image.name;
+
+  const orientationLabel = document.createElement("span");
+  orientationLabel.className = "orientation-label";
+  orientationLabel.textContent = orientation;
+  caption.append(captionName, orientationLabel);
 
   const menuWrap = document.createElement("div");
   menuWrap.className = "menu-wrap";
@@ -464,11 +519,15 @@ async function uploadEntry(entry, user) {
   const id = makeId();
   const path = `users/${user.uid}/images/${id}`;
   const objectReference = storageRef(storage, path);
+  const details = await inspectImage(entry.file);
   await uploadBytes(objectReference, entry.file, {
     contentType: entry.file.type,
     customMetadata: {
       ownerId: user.uid,
-      originalName: entry.file.name || "picture"
+      originalName: entry.file.name || "picture",
+      orientation: details.orientation,
+      pixelWidth: String(details.width),
+      pixelHeight: String(details.height)
     }
   });
 
@@ -478,6 +537,9 @@ async function uploadEntry(entry, user) {
       name: entry.file.name || "picture",
       type: entry.file.type,
       size: entry.file.size,
+      width: details.width,
+      height: details.height,
+      orientation: details.orientation,
       createdAt: new Date().toISOString(),
       storagePath: path
     });
@@ -486,7 +548,7 @@ async function uploadEntry(entry, user) {
     throw error;
   }
 
-  return entry;
+  return { ...entry, ...details };
 }
 
 async function uploadEntries(entries) {
@@ -496,7 +558,7 @@ async function uploadEntries(entries) {
   setSaving(true, "Uploading");
   const results = await Promise.allSettled(entries.map((entry) => uploadEntry(entry, user)));
   const uploaded = results
-    .map((result, index) => result.status === "fulfilled" ? entries[index] : null)
+    .map((result) => result.status === "fulfilled" ? result.value : null)
     .filter(Boolean);
   const failure = results.find((result) => result.status === "rejected");
 
@@ -596,7 +658,14 @@ async function applyImageSnapshot(snapshot, userId) {
 
     try {
       const blob = await getBlob(storageRef(storage, record.storagePath));
-      return { ...record, src: URL.createObjectURL(blob) };
+      const details = record.orientation
+        ? {
+            width: Number(record.width) || 0,
+            height: Number(record.height) || 0,
+            orientation: record.orientation
+          }
+        : await inspectImage(blob);
+      return { ...record, ...details, src: URL.createObjectURL(blob) };
     } catch (error) {
       console.error(error);
       return { ...record, src: "" };
