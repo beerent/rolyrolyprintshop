@@ -44,6 +44,12 @@ const DB_VERSION = 1;
 const STORE_NAME = "images";
 const LEGACY_DB_NAMES = ["print-parade"];
 const MAX_FILE_SIZE = 20 * 1024 * 1024;
+const PRINT_SIZE_STORAGE_KEY = "rollie-pollie-print-size";
+const PRINT_SIZES = {
+  small: { label: "Small", scale: 45 },
+  medium: { label: "Medium", scale: 70 },
+  large: { label: "Large", scale: 100 }
+};
 
 const appShell = document.querySelector(".app-shell");
 const appActions = document.querySelector("#appActions");
@@ -69,6 +75,7 @@ const emptyState = document.querySelector("#emptyState");
 const imageCount = document.querySelector("#imageCount");
 const statusText = document.querySelector("#statusText");
 const saveState = document.querySelector("#saveState");
+const printSizeButtons = Array.from(document.querySelectorAll("[data-print-size]"));
 const migrationBanner = document.querySelector("#migrationBanner");
 const migrationText = document.querySelector("#migrationText");
 const importMigrationButton = document.querySelector("#importMigrationButton");
@@ -85,6 +92,7 @@ let pastedImageCount = 0;
 let toastTimer = 0;
 let unsubscribeImages = null;
 let imageLoadVersion = 0;
+let printSize = loadPrintSize();
 
 function makeId() {
   if (crypto.randomUUID) return crypto.randomUUID();
@@ -98,6 +106,36 @@ function showToast(message) {
   toastTimer = window.setTimeout(() => {
     toast.classList.remove("is-visible");
   }, 3200);
+}
+
+function loadPrintSize() {
+  try {
+    const savedSize = localStorage.getItem(PRINT_SIZE_STORAGE_KEY);
+    if (Object.hasOwn(PRINT_SIZES, savedSize)) return savedSize;
+  } catch (error) {
+    console.warn("Could not read the saved print size.", error);
+  }
+  return "medium";
+}
+
+function setPrintSize(size, shouldAnnounce = false) {
+  if (!Object.hasOwn(PRINT_SIZES, size)) return;
+  printSize = size;
+
+  printSizeButtons.forEach((button) => {
+    const isActive = button.dataset.printSize === size;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
+  });
+
+  try {
+    localStorage.setItem(PRINT_SIZE_STORAGE_KEY, size);
+  } catch (error) {
+    console.warn("Could not save the print size.", error);
+  }
+
+  if (images.length) render();
+  if (shouldAnnounce) showToast(`Print size set to ${PRINT_SIZES[size].label}.`);
 }
 
 function formatCount(count) {
@@ -351,6 +389,7 @@ function printImage(image) {
   }
 
   const orientation = image.orientation === "landscape" ? "landscape" : "portrait";
+  const size = PRINT_SIZES[printSize] ?? PRINT_SIZES.medium;
   const cleanup = () => window.setTimeout(() => frame.remove(), 400);
   const runPrint = () => {
     printWindow.focus();
@@ -370,7 +409,7 @@ function printImage(image) {
       @page { size: ${orientation}; margin: 0; }
       html, body { width: 100%; height: 100%; margin: 0; }
       body { display: flex; align-items: center; justify-content: center; background: white; }
-      img { max-width: 100vw; max-height: 100vh; object-fit: contain; }
+      img { width: ${size.scale}vw; height: ${size.scale}vh; object-fit: contain; }
     </style>
   </head>
   <body>
@@ -407,9 +446,12 @@ function createTile(image) {
   imageButton.className = "image-button";
   imageButton.type = "button";
   const orientation = image.orientation === "landscape" ? "Landscape" : "Portrait";
+  const size = PRINT_SIZES[printSize] ?? PRINT_SIZES.medium;
   imageButton.setAttribute(
     "aria-label",
-    image.src ? `Print ${image.name} in ${orientation.toLowerCase()}` : `${image.name} preview unavailable`
+    image.src
+      ? `Print ${image.name} in ${orientation.toLowerCase()} at ${size.label.toLowerCase()} size`
+      : `${image.name} preview unavailable`
   );
   imageButton.addEventListener("click", () => printImage(image));
 
@@ -781,6 +823,9 @@ resetPasswordButton.addEventListener("click", async () => {
 });
 
 signOutButton.addEventListener("click", () => signOut(auth));
+printSizeButtons.forEach((button) => {
+  button.addEventListener("click", () => setPrintSize(button.dataset.printSize, true));
+});
 uploadButton.addEventListener("click", () => fileInput.click());
 emptyUploadButton.addEventListener("click", () => fileInput.click());
 fileInput.addEventListener("change", () => addFiles(fileInput.files ?? []));
@@ -829,5 +874,6 @@ window.addEventListener("beforeunload", () => {
   if (unsubscribeImages) unsubscribeImages();
 });
 
+setPrintSize(printSize);
 setAuthMode("signin");
 onAuthStateChanged(auth, (user) => void handleAuthState(user));

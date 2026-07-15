@@ -79,8 +79,18 @@
 
         <section class="drop-zone" id="dropZone" aria-live="polite">
           <div class="status-row">
-            <p id="statusText">Loading your picture wall</p>
-            <p id="saveState"></p>
+            <div class="status-copy">
+              <p id="statusText">Loading your picture wall</p>
+              <p id="saveState"></p>
+            </div>
+            <div class="print-size-picker" role="group" aria-label="Print size">
+              <span>Print size</span>
+              <div class="print-size-options">
+                <button type="button" data-print-size="small" aria-pressed="false">Small</button>
+                <button type="button" data-print-size="medium" aria-pressed="true">Medium</button>
+                <button type="button" data-print-size="large" aria-pressed="false">Large</button>
+              </div>
+            </div>
           </div>
 
           <div class="grid" id="imageGrid" aria-label="Saved images"></div>
