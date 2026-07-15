@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "node server.mjs",
-    "check": "node --check app.js && node --check server.mjs"
+    "check": "node --check app.js && node --check server.mjs",
+    "deploy": "firebase deploy",
+    "deploy:rules": "firebase deploy --only auth,firestore:rules,storage"
   }
 }

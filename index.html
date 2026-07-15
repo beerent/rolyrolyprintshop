@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="./styles.css">
   </head>
   <body>
-    <main class="app-shell" data-state="loading">
+    <main class="app-shell" data-state="loading" data-auth="loading">
       <header class="top-bar">
         <div class="brand-lockup" aria-label="Rollie Pollie Print Shop">
           <div class="brand-mark" aria-hidden="true">
@@ -26,8 +26,13 @@
           </div>
         </div>
 
-        <div class="actions">
+        <div class="actions" id="appActions" hidden>
           <p class="count-pill" id="imageCount">No images</p>
+          <div class="user-chip" title="Signed-in account">
+            <span class="user-avatar" id="userInitial" aria-hidden="true">R</span>
+            <span class="user-email" id="userEmail"></span>
+          </div>
+          <button class="plain-button" type="button" id="signOutButton">Sign out</button>
           <button class="upload-button" type="button" id="uploadButton">
             <span class="plus-icon" aria-hidden="true"></span>
             Add images
@@ -36,26 +41,63 @@
         </div>
       </header>
 
-      <section class="drop-zone" id="dropZone" aria-live="polite">
-        <div class="status-row">
-          <p id="statusText">Loading your picture wall</p>
-          <p id="saveState"></p>
-        </div>
+      <section class="auth-view" id="authView" aria-labelledby="authTitle" hidden>
+        <div class="auth-panel">
+          <p class="eyebrow">Your private print wall</p>
+          <h2 id="authTitle">Sign in to your shop</h2>
 
-        <div class="grid" id="imageGrid" aria-label="Saved images"></div>
-
-        <div class="empty-state" id="emptyState">
-          <div class="empty-art" aria-hidden="true">
-            <span></span>
-            <span></span>
-            <span></span>
+          <div class="auth-tabs" role="tablist" aria-label="Account action">
+            <button class="auth-tab is-active" type="button" role="tab" aria-selected="true" data-auth-mode="signin">Sign in</button>
+            <button class="auth-tab" type="button" role="tab" aria-selected="false" data-auth-mode="signup">Create account</button>
           </div>
-          <h2>No pictures yet</h2>
-          <button class="upload-button secondary" type="button" id="emptyUploadButton">
-            <span class="plus-icon" aria-hidden="true"></span>
-            Add your first images
-          </button>
+
+          <form class="auth-form" id="authForm">
+            <label for="authEmail">Email</label>
+            <input id="authEmail" name="email" type="email" autocomplete="username" required>
+
+            <label for="authPassword">Password</label>
+            <input id="authPassword" name="password" type="password" autocomplete="current-password" minlength="6" required>
+
+            <button class="upload-button auth-submit" type="submit" id="authSubmit">Sign in</button>
+            <button class="text-button" type="button" id="resetPasswordButton">Forgot password?</button>
+            <p class="form-message" id="authMessage" role="status" aria-live="polite"></p>
+          </form>
         </div>
+      </section>
+
+      <section class="workspace" id="workspace" hidden>
+        <aside class="migration-banner" id="migrationBanner" hidden>
+          <div>
+            <strong>Bring over pictures from this browser?</strong>
+            <p id="migrationText"></p>
+          </div>
+          <div class="migration-actions">
+            <button class="plain-button" type="button" id="dismissMigrationButton">Not now</button>
+            <button class="upload-button compact" type="button" id="importMigrationButton">Import</button>
+          </div>
+        </aside>
+
+        <section class="drop-zone" id="dropZone" aria-live="polite">
+          <div class="status-row">
+            <p id="statusText">Loading your picture wall</p>
+            <p id="saveState"></p>
+          </div>
+
+          <div class="grid" id="imageGrid" aria-label="Saved images"></div>
+
+          <div class="empty-state" id="emptyState">
+            <div class="empty-art" aria-hidden="true">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <h2>No pictures yet</h2>
+            <button class="upload-button secondary" type="button" id="emptyUploadButton">
+              <span class="plus-icon" aria-hidden="true"></span>
+              Add your first images
+            </button>
+          </div>
+        </section>
       </section>
 
       <div class="toast" id="toast" role="status" aria-live="polite"></div>

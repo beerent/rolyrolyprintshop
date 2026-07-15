@@ -1,0 +1,43 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function isValidImage(imageId, userId) {
+      let data = request.resource.data;
+      return data.keys().hasOnly([
+          'id',
+          'name',
+          'type',
+          'size',
+          'createdAt',
+          'storagePath'
+        ])
+        && data.id == imageId
+        && data.name is string
+        && data.name.size() > 0
+        && data.name.size() <= 240
+        && data.type is string
+        && data.type.matches('image/.*')
+        && data.size is int
+        && data.size > 0
+        && data.size <= 20 * 1024 * 1024
+        && data.createdAt is string
+        && data.storagePath == 'users/' + userId + '/images/' + imageId;
+    }
+
+    match /users/{userId}/images/{imageId} {
+      allow read: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidImage(imageId, userId);
+      allow update: if false;
+      allow delete: if isOwner(userId);
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
