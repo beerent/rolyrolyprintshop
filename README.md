@@ -40,7 +40,9 @@ Create a Render Static Site from the GitHub repository with:
 - Publish directory: `dist`
 - Branch: `main`
 
-After Render assigns the production domain, add its HTTPS origin to `storage.cors.json`, apply it with `npm run deploy:cors`, and add the hostname to Firebase Authentication's authorized domains.
+Production site: <https://rolyrolyprintshop.onrender.com>
+
+The Render origin is included in `storage.cors.json`; apply it with `npm run deploy:cors` after creating or replacing the Storage bucket. The hostname must also remain in Firebase Authentication's authorized domains.
 
 Firebase Storage requires the project to use the Blaze plan. The bucket is configured for `us-east1`, one of Google Cloud Storage's Always Free eligible regions. Run `npm run deploy:cors` after creating or replacing the bucket so signed-in browsers can load private image previews from the production and local app origins.
 
