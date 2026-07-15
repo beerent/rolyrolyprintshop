@@ -173,20 +173,41 @@ function loadImageElement(blob) {
   });
 }
 
-async function inspectImage(blob) {
-  let dimensions;
+async function inspectSvg(blob) {
+  if (blob.type !== "image/svg+xml") return null;
 
-  if ("createImageBitmap" in window) {
+  const document = new DOMParser().parseFromString(await blob.text(), "image/svg+xml");
+  const svg = document.documentElement;
+  if (svg.localName !== "svg" || document.querySelector("parsererror")) return null;
+
+  const viewBox = (svg.getAttribute("viewBox") ?? "")
+    .trim()
+    .split(/[\s,]+/)
+    .map(Number);
+  const viewBoxWidth = viewBox.length === 4 ? viewBox[2] : 0;
+  const viewBoxHeight = viewBox.length === 4 ? viewBox[3] : 0;
+  const width = viewBoxWidth || Number.parseFloat(svg.getAttribute("width"));
+  const height = viewBoxHeight || Number.parseFloat(svg.getAttribute("height"));
+
+  return width > 0 && height > 0 ? { width, height } : null;
+}
+
+async function inspectImage(blob) {
+  let dimensions = await inspectSvg(blob);
+
+  if (!dimensions && "createImageBitmap" in window) {
     try {
       const bitmap = await createImageBitmap(blob, { imageOrientation: "from-image" });
       dimensions = { width: bitmap.width, height: bitmap.height };
       bitmap.close();
     } catch {
-      dimensions = await loadImageElement(blob);
+      dimensions = await loadImageElement(blob).catch(() => null);
     }
-  } else {
-    dimensions = await loadImageElement(blob);
+  } else if (!dimensions) {
+    dimensions = await loadImageElement(blob).catch(() => null);
   }
+
+  dimensions ??= { width: 1, height: 1 };
 
   return {
     ...dimensions,
