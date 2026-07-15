@@ -32,6 +32,16 @@ npm run deploy
 npm run deploy:cors
 ```
 
+## Deploy on Render
+
+Create a Render Static Site from the GitHub repository with:
+
+- Build command: `npm run build`
+- Publish directory: `dist`
+- Branch: `main`
+
+After Render assigns the production domain, add its HTTPS origin to `storage.cors.json`, apply it with `npm run deploy:cors`, and add the hostname to Firebase Authentication's authorized domains.
+
 Firebase Storage requires the project to use the Blaze plan. The bucket is configured for `us-east1`, one of Google Cloud Storage's Always Free eligible regions. Run `npm run deploy:cors` after creating or replacing the bucket so signed-in browsers can load private image previews from the production and local app origins.
 
 ## Data model

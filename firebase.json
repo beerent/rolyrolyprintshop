@@ -19,6 +19,8 @@
       "**/.*",
       "**/node_modules/**",
       "README.md",
+      "build.mjs",
+      "dist/**",
       "package.json",
       "package-lock.json",
       "server.mjs",
