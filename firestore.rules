@@ -28,11 +28,17 @@ service cloud.firestore {
         && data.size is int
         && data.size > 0
         && data.size <= 20 * 1024 * 1024
-        && data.width is int
-        && data.width > 0
-        && data.height is int
-        && data.height > 0
-        && data.orientation in ['portrait', 'landscape']
+        && (
+          !data.keys().hasAny(['width', 'height', 'orientation'])
+          || (
+            data.keys().hasAll(['width', 'height', 'orientation'])
+            && data.width is int
+            && data.width > 0
+            && data.height is int
+            && data.height > 0
+            && data.orientation in ['portrait', 'landscape']
+          )
+        )
         && data.createdAt is string
         && data.storagePath == 'users/' + userId + '/images/' + imageId;
     }
