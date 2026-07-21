@@ -801,6 +801,18 @@ h1 {
   font-size: 1.35rem;
 }
 
+.site-footer {
+  padding: 4px 12px 2px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 750;
+  text-align: center;
+}
+
+.site-footer p {
+  margin: 0;
+}
+
 .toast {
   position: fixed;
   left: 50%;
